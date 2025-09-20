@@ -2,6 +2,8 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import { connectDB } from "./config/db.js";
+import marcaRoutes from './routes/marcaRoutes.js';
+import filamentoRoutes from './routes/filamentoRoutes.js';
 
 // carga de variables de entorno
 dotenv.config();
@@ -17,9 +19,13 @@ app.use(cors()); // permite peticiones desde otros dominios (CORS)
 app.use(express.json()); // permite recibir datos en formato JSON en el body
 
 // Rutas de prueba
-app.get("/prueba", (req, res) => {
+app.get("/api/prueba", (req, res) => {
   res.send("🚀 Backend de ecommerce funcionando");
 });
+
+// Rutas
+app.use('/api/marcas', marcaRoutes);
+app.use('/api/filamentos', filamentoRoutes);
 
 // Servidor
 

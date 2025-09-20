@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 // definimos el esquema de marca
-const marcaSchema = new mongoose.Schema(
+const MarcaSchema = new mongoose.Schema(
   {
     nombre: {
       type: String,
@@ -21,4 +21,4 @@ const marcaSchema = new mongoose.Schema(
 );
 
 // creamos el modelo en la base de datos
-export const Marca = mongoose.model("Marca", marcaSchema);
+export default mongoose.model('Marca', MarcaSchema);
