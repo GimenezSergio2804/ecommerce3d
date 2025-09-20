@@ -5,8 +5,7 @@ import Marca from "../models/Marca.js";
 // Crear un nuevo filamento
 export const crearFilamento = async (req, res) => {
   try {
-    const { marcaId, material, color, pesoRestante, numeroRollo, colorHex } =
-      req.body;
+    const { marcaId, material, color, pesoRestante, numeroRollo, colorHex } = req.body;
 
     // Verificar que la marca exista
     if (!mongoose.Types.ObjectId.isValid(marcaId)) {
@@ -14,16 +13,30 @@ export const crearFilamento = async (req, res) => {
     }
 
     const marca = await Marca.findById(marcaId);
-    if (!marca)
+    if (!marca) {
       return res.status(404).json({ ok: false, mensaje: "Marca no encontrada" });
+    }
 
     // Validaciones básicas
     if (!material || !color || typeof pesoRestante !== "number") {
-      return res
-        .status(400)
-        .json({ ok: false, mensaje: "Material, color y pesoRestante son obligatorios" });
+      return res.status(400).json({
+        ok: false,
+        mensaje: "Material, color y pesoRestante son obligatorios",
+      });
     }
 
+    // ✅ Verificar si ya existe un rollo con ese número (único global)
+    if (numeroRollo) {
+      const existe = await Filamento.findOne({ numeroRollo, estado: true });
+      if (existe) {
+        return res.status(409).json({
+          ok: false,
+          mensaje: `El rollo número ${numeroRollo} ya existe en el sistema`,
+        });
+      }
+    }
+
+    // Crear el filamento
     const filamento = new Filamento({
       marca: marcaId,
       material,
@@ -41,6 +54,7 @@ export const crearFilamento = async (req, res) => {
     return res.status(500).json({ ok: false, mensaje: err.message });
   }
 };
+
 
 // Listar filamentos activos con paginación y filtros
 export const listarFilamentos = async (req, res) => {
@@ -73,6 +87,37 @@ export const listarFilamentos = async (req, res) => {
     return res.status(500).json({ ok: false, mensaje: err.message });
   }
 };
+
+// Stock general por marca (agrupado por color)
+export const stockGeneral = async (req, res) => {
+  try {
+    const { marcaId } = req.query;
+
+    // validar marcaId
+    if (!marcaId || !mongoose.Types.ObjectId.isValid(marcaId)) {
+      return res.status(400).json({ ok: false, mensaje: "marcaId inválido o faltante" });
+    }
+
+    // agrupar por color y sumar pesos actuales
+    const stock = await Filamento.aggregate([
+      { $match: { marca: new mongoose.Types.ObjectId(marcaId), estado: true } },
+      {
+        $group: {
+          _id: "$color",
+          totalGramos: { $sum: "$pesoRestante" },
+          cantidadRollos: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+
+    return res.json({ ok: true, data: stock });
+  } catch (err) {
+    console.error("stockGeneral error", err);
+    return res.status(500).json({ ok: false, mensaje: err.message });
+  }
+};
+
 
 // Obtener filamento por id
 export const obtenerFilamentoPorId = async (req, res) => {

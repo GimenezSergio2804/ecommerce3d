@@ -6,6 +6,7 @@ import {
   actualizarFilamento,
   desactivarFilamento,
   stockPorColor,
+  stockGeneral
 } from "../controllers/filamentoController.js";
 
 const router = Router();
@@ -27,5 +28,8 @@ router.patch("/:id/desactivar", desactivarFilamento);
 
 // Consultar stock total por color y marca
 router.get("/stock/stockporColor", stockPorColor);
+
+// consulta stock general por marca (agrupado por color)
+router.get("/stock/general", stockGeneral);
 
 export default router;

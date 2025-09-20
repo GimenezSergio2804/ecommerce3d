@@ -34,7 +34,9 @@ const FilamentoSchema = new mongoose.Schema({
     },
     numeroRollo: {
       type: Number,
+      unique: true,
       default: null, // opcional
+      sparse: true // para poder guardar mas de un null
     },
     
     // Alerta cuando quede poca cantidad
