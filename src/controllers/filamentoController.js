@@ -55,6 +55,45 @@ export const crearFilamento = async (req, res) => {
   }
 };
 
+// Actualizar peso de un rollo usando el peso de la balanza
+export const actualizarPesoRollo = async (req, res) => {
+  try {
+    const { id } = req.params; // id del rollo
+    const { pesoBalanza } = req.body; // peso medido en la balanza
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ ok: false, mensaje: "ID inválido" });
+    }
+
+    if (typeof pesoBalanza !== "number" || pesoBalanza <= 0) {
+      return res.status(400).json({ ok: false, mensaje: "El peso de la balanza debe ser un número válido" });
+    }
+
+    // Busco el filamento
+    const filamento = await Filamento.findById(id).populate("marca");
+    if (!filamento) {
+      return res.status(404).json({ ok: false, mensaje: "Filamento no encontrado" });
+    }
+
+    // Calculo el peso restante: balanza - peso del rollo vacío de la marca
+    const pesoRestante = pesoBalanza - filamento.marca.pesoRolloVacio;
+
+    // Actualizo los valores
+    filamento.pesoRestante = pesoRestante > 0 ? pesoRestante : 0;
+    if (filamento.pesoRestante <= 0) {
+      filamento.estado = false; // marcar como inactivo si no queda nada
+    }
+
+    await filamento.save();
+
+    return res.json({ ok: true, data: filamento });
+  } catch (err) {
+    console.error("actualizarPesoRollo error:", err);
+    return res.status(500).json({ ok: false, mensaje: err.message });
+  }
+};
+
+
 
 // Listar filamentos activos con paginación y filtros
 export const listarFilamentos = async (req, res) => {

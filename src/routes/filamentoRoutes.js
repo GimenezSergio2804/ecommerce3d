@@ -6,7 +6,8 @@ import {
   actualizarFilamento,
   desactivarFilamento,
   stockPorColor,
-  stockGeneral
+  stockGeneral,
+  actualizarPesoRollo
 } from "../controllers/filamentoController.js";
 
 const router = Router();
@@ -22,6 +23,9 @@ router.get("/:id", obtenerFilamentoPorId);
 
 // Actualizar filamento
  router.put("/:id", actualizarFilamento);
+
+ // Actualizar peso de un rollo
+router.put("/:id/actualizar-peso", actualizarPesoRollo);
 
 // Desactivar filamento
 router.patch("/:id/desactivar", desactivarFilamento);
